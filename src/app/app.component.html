@@ -16,8 +16,8 @@
 
 <div *ngFor="let transcription of transcriptions" class="messages">
 
+  <h4>{{ transcription.role }}</h4>
     <div class="user">
-      <h4>{{ transcription.role }}</h4>
       <p>{{ transcription.transcript }}</p>
       <audio controls >
         <source [src]="sanitize(url)" type="audio/wav">
@@ -25,8 +25,8 @@
   
     </div>
   
+    <h4 style="text-align: end;">{{ transcription.response.role }}</h4>
     <div class="assistent">
-      <h4>{{ transcription.response.role }}</h4>
       <p>{{ transcription.response.content }}</p>
       <audio controls >
         <source [src]="sanitize(url)" type="audio/wav">

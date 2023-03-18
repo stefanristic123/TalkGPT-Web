@@ -18,8 +18,8 @@ export class AppComponent {
     text: new FormControl(''),
   });
 
-  api_key = "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";
-  configuration = new Configuration({apiKey: "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"});
+  api_key = "";
+  configuration = new Configuration({apiKey: ""});
   openai = new OpenAIApi(this.configuration); 
 
   record: any;
