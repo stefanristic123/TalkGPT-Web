@@ -21,8 +21,8 @@ export class AppComponent implements AfterViewInit {
     text: new FormControl(''),
   });
 
-  api_key = "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";
-  configuration = new Configuration({apiKey: "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"});
+  api_key = "";
+  configuration = new Configuration({apiKey: ""});
   openai = new OpenAIApi(this.configuration); 
 
   record: any;
