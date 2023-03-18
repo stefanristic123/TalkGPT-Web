@@ -1,0 +1,39 @@
+.messages {
+    width: 600px;
+    margin: auto;
+}
+
+
+.user {
+    padding: 0px 10px 0px 10px;
+    background-color: rgb(180, 180, 180);
+    border-radius: 15px;
+}
+
+
+.assistent{
+    text-align: end;
+    padding: 0px 10px 0px 10px;
+    background-color: #f0b660;
+    border-radius: 15px;
+}
+
+.micon{
+    background-color: green;
+    border-radius: 100px;
+    height: 80px;
+    width: 80px;
+    margin: auto;
+}
+
+.micoff{
+    background-color: red;
+    border-radius: 100px;
+    height: 80px;
+    width: 80px;
+    margin: auto;
+}
+
+.CNToggle {
+    font-size: xxx-large;
+}
