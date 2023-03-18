@@ -1,20 +1,23 @@
-<form [formGroup]="form" >
-<!-- jos malo -->
 
-  <label for="first-name">Add system preference: </label>
-  <input id="first-name" type="text" formControlName="text">
-
-</form>
-
-<!-- <button (click)="onSubmit()">Submit</button> -->
-
+<div *ngIf="!responseFromPreference">
+  <form [formGroup]="form" >
+    <!-- jos malo -->
+    
+      <label for="first-name">Add system preference: </label>
+      <input id="first-name" type="text" formControlName="text">
+    
+    </form>
+    
+    <button (click)="onSubmit()">Submit</button>
+</div>
 
 <!-- <p *ngIf="response">{{ response?.role }}:  {{ response?.content }}</p> -->
 
 
-<div style="height: 80vh;overflow: auto;">
+<div #content style="height: 80vh;overflow: auto;flex-direction: column-reverse;" >
 
-<div *ngFor="let transcription of transcriptions" class="messages">
+  
+  <div #messages *ngFor="let transcription of transcriptions" class="messages">
 
   <h4>{{ transcription.role }}</h4>
     <div class="user">

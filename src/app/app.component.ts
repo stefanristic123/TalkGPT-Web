@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Configuration, OpenAIApi, ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum } from 'openai';
 import * as RecordRTC from 'recordrtc';
@@ -10,16 +10,19 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
  
+  @ViewChildren('messages') messagescss!: QueryList<any>;
+  @ViewChild('content') contentcss!: ElementRef;
   public transcribedText?: string;
   response: any;
+  responseFromPreference: any
   form = new FormGroup({
     text: new FormControl(''),
   });
 
-  api_key = "";
-  configuration = new Configuration({apiKey: ""});
+  api_key = "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";
+  configuration = new Configuration({apiKey: "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"});
   openai = new OpenAIApi(this.configuration); 
 
   record: any;
@@ -28,9 +31,26 @@ export class AppComponent {
   error: any;
   transcriptions: { transcript: any, role: any,audioUrl: any, response: any }[] = [];
 
-
   constructor(private domSanitizer: DomSanitizer,private http: HttpClient) {  }
 
+
+
+ngAfterViewInit() {
+  this.scrollToBottom();
+  this.messagescss.changes.subscribe(this.scrollToBottom);
+}
+
+scrollToBottom = () => {
+  try {
+    this.contentcss.nativeElement.scrollTop = this.contentcss.nativeElement.scrollHeight;
+  } catch (err) {}
+}
+
+  onSubmit(){
+    console.log(this.form.value.text)
+    let systemPreference = this.form.value.text
+    this.transcript(null, systemPreference);
+  }
 
   sanitize(url: string) {
     return this.domSanitizer.bypassSecurityTrustUrl(url);
@@ -59,57 +79,23 @@ export class AppComponent {
 
   public async processRecording(blob: any): Promise<any>  {
     console.log(blob)
-    this.transcript(blob);
+    this.transcript(blob, null);
   }
 
-  // public async transcript(audio: any): Promise<any> { 
+  public async transcript(audio: any, systemPreference: any): Promise<any> { 
+    if (systemPreference) {
+      const completion = await this.openai.createChatCompletion({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: ChatCompletionRequestMessageRoleEnum.System, content: systemPreference },
+        ],
+      });
+      console.log(completion.data.choices[0].message);
+      this.responseFromPreference = completion.data.choices[0].message
 
-  //   this.url = URL.createObjectURL(audio);
-  //   console.log('akalala', this.openai)
-  //     const formData = new FormData();
-  //     formData.append('file', audio, 'test.wav');
-  //     formData.append('model', 'whisper-1');
-  //     // formData.append('language', 'en');
-  
-  //     const transcriptionResponse = await this.http.post<any>(
-  //       'https://api.openai.com/v1/audio/transcriptions',
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${this.api_key}`,
-  //           Accept: 'application/json',
-  //         },
-  //       }
-  //     ).toPromise();
-  
-  //     this.transcribedText = transcriptionResponse?.text || '';
-  //     console.log(this.transcribedText)
-
-  //     if(this.transcribedText){
-  //       this.onSubmit(this.transcribedText)
-  //       this.transcriptions.push({ transcript: this.transcribedText, audioUrl: audio });
-  //     }
-  // }
-
-  // public async onSubmit(data: any): Promise<any> { 
-  //   // let data: string = this.form.value.text!;
-  //   const completion = await this.openai.createChatCompletion({
-  //     model: 'gpt-3.5-turbo',
-  //     messages: [
-  //       { role: ChatCompletionRequestMessageRoleEnum.System, content: data },
-  //     ],
-  //   });
-
-  //   console.log(completion.data.choices[0].message);
-
-  //   this.response = completion.data.choices[0].message
-  //   return this.response;
-  // }
-
-
-  public async transcript(audio: any): Promise<any> { 
+    } else {
     this.url = URL.createObjectURL(audio);
-    console.log('akalala', this.openai)
+    console.log('Opaa', this.openai)
       const formData = new FormData();
       formData.append('file', audio, 'test.wav');
       formData.append('model', 'whisper-1');
@@ -145,6 +131,7 @@ export class AppComponent {
           response: this.response
         });
       }
+    }  
   }
 
   errorCallback(error: any) {
