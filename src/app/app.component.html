@@ -11,14 +11,8 @@
     <button (click)="onSubmit()">Submit</button>
 </div>
 
-<!-- <p *ngIf="response">{{ response?.role }}:  {{ response?.content }}</p> -->
-
-
 <div #content style="height: 80vh;overflow: auto;flex-direction: column-reverse;" >
-
-  
   <div #messages *ngFor="let transcription of transcriptions" class="messages">
-
   <h4>{{ transcription.role }}</h4>
     <div class="user">
       <p>{{ transcription.transcript }}</p>
@@ -27,15 +21,13 @@
       </audio>
   
     </div>
-  
     <h4 style="text-align: end;">{{ transcription.response.role }}</h4>
     <div class="assistent">
       <p>{{ transcription.response.content }}</p>
       <audio controls >
-        <source [src]="sanitize(url)" type="audio/wav">
+        <source [src]="sanitize(transcription.response.audio)" type="audio/wav">
       </audio>
     </div>
-
 </div>
 </div>
 

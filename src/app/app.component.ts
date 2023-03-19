@@ -21,10 +21,13 @@ export class AppComponent implements AfterViewInit {
     text: new FormControl(''),
   });
 
+  voice_id = "21m00Tcm4TlvDq8ikWAM"
+  api_key_eleven = ""
   api_key = "";
   configuration = new Configuration({apiKey: ""});
   openai = new OpenAIApi(this.configuration); 
 
+  audioUrlFromEleven: any;
   record: any;
   recording = false;
   url: any;
@@ -83,6 +86,7 @@ scrollToBottom = () => {
   }
 
   public async transcript(audio: any, systemPreference: any): Promise<any> { 
+    // system prefecence
     if (systemPreference) {
       const completion = await this.openai.createChatCompletion({
         model: 'gpt-3.5-turbo',
@@ -94,6 +98,7 @@ scrollToBottom = () => {
       this.responseFromPreference = completion.data.choices[0].message
 
     } else {
+    // speach to text Whisper
     this.url = URL.createObjectURL(audio);
     console.log('Opaa', this.openai)
       const formData = new FormData();
@@ -112,6 +117,7 @@ scrollToBottom = () => {
       this.transcribedText = transcriptionResponse?.text || '';
       console.log(this.transcribedText)
 
+      // Ask chat gpt and get a response
       if(this.transcribedText){
         const completion = await this.openai.createChatCompletion({
           model: 'gpt-3.5-turbo',
@@ -121,15 +127,43 @@ scrollToBottom = () => {
         });
 
         console.log(completion.data.choices[0].message);
-
         this.response = completion.data.choices[0].message
 
-        this.transcriptions.push({ 
-          transcript: this.transcribedText,
-          audioUrl: audio,
-          role: ChatCompletionRequestMessageRoleEnum.User,
-          response: this.response
-        });
+        console.log(completion.data.choices[0].message?.content);
+        let contentFromGPT = completion.data.choices[0].message?.content
+        if (contentFromGPT) {
+          const url = `https://api.elevenlabs.io/v1/text-to-speech/${this.voice_id}`;
+          const body = {
+            text: contentFromGPT,
+            voice_settings: { stability: 0, similarity_boost: 0 }
+          };
+          const responseFromEleven = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'xi-api-key': this.api_key_eleven
+            },
+            body: JSON.stringify(body)
+          });
+          if (responseFromEleven.ok) {
+            const audioBlob = await responseFromEleven.blob();
+            this.audioUrlFromEleven = URL.createObjectURL(audioBlob);
+            this.response.audio = this.audioUrlFromEleven;
+            console.log(this.audioUrlFromEleven)
+
+            this.transcriptions.push({ 
+              transcript: this.transcribedText,
+              audioUrl: audio,
+              role: ChatCompletionRequestMessageRoleEnum.User,
+              response: this.response
+            });
+
+            console.log(this.transcriptions)
+          } else {
+            const errorData = await responseFromEleven.json();
+            throw new Error(`Text to speech conversion failed: ${errorData.detail[0].msg}`);
+          }
+        }
       }
     }  
   }
