@@ -4,6 +4,7 @@ import { Configuration, OpenAIApi, ChatCompletionRequestMessage, ChatCompletionR
 import * as RecordRTC from 'recordrtc';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment.development';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements AfterViewInit {
- 
+
   @ViewChildren('messages') messagescss!: QueryList<any>;
   @ViewChild('content') contentcss!: ElementRef;
   public transcribedText?: string;
@@ -22,34 +23,36 @@ export class AppComponent implements AfterViewInit {
   });
 
   voice_id = "21m00Tcm4TlvDq8ikWAM"
-  api_key_eleven = ""
-  api_key = "";
-  configuration = new Configuration({apiKey: ""});
-  openai = new OpenAIApi(this.configuration); 
+  api_key_eleven = environment.api_key_eleven
+  api_key = environment.api_key;
+  configuration = new Configuration({ apiKey: environment.api_key });
+  openai = new OpenAIApi(this.configuration);
 
   audioUrlFromEleven: any;
   record: any;
   recording = false;
+  hidePreferences = true;
   url: any;
   error: any;
-  transcriptions: { transcript: any, role: any,audioUrl: any, response: any }[] = [];
+  loading = false;
+  transcriptions: { transcript: any, role: any, audioUrl: any, response: any }[] = [];
 
-  constructor(private domSanitizer: DomSanitizer,private http: HttpClient) {  }
+  constructor(
+    private domSanitizer: DomSanitizer, 
+    private http: HttpClient) { }
 
+  ngAfterViewInit() {
+    this.scrollToBottom();
+    this.messagescss.changes.subscribe(this.scrollToBottom);
+  }
 
+  scrollToBottom = () => {
+    try {
+      this.contentcss.nativeElement.scrollTop = this.contentcss.nativeElement.scrollHeight;
+    } catch (err) { }
+  }
 
-ngAfterViewInit() {
-  this.scrollToBottom();
-  this.messagescss.changes.subscribe(this.scrollToBottom);
-}
-
-scrollToBottom = () => {
-  try {
-    this.contentcss.nativeElement.scrollTop = this.contentcss.nativeElement.scrollHeight;
-  } catch (err) {}
-}
-
-  onSubmit(){
+  onSubmit() {
     console.log(this.form.value.text)
     let systemPreference = this.form.value.text
     this.transcript(null, systemPreference);
@@ -61,7 +64,8 @@ scrollToBottom = () => {
 
   initiateRecording() {
     this.recording = true;
-    let mediaConstraints = { video: false, audio: true};
+    this.hidePreferences = false
+    let mediaConstraints = { video: false, audio: true };
     navigator.mediaDevices.getUserMedia(mediaConstraints).then(this.successCallback.bind(this), this.errorCallback.bind(this));
   }
 
@@ -80,12 +84,13 @@ scrollToBottom = () => {
     this.record.stop(this.processRecording.bind(this));
   }
 
-  public async processRecording(blob: any): Promise<any>  {
+  public async processRecording(blob: any): Promise<any> {
     console.log(blob)
     this.transcript(blob, null);
   }
 
-  public async transcript(audio: any, systemPreference: any): Promise<any> { 
+  public async transcript(audio: any, systemPreference: any): Promise<any> {
+    this.loading= true;
     // system prefecence
     if (systemPreference) {
       const completion = await this.openai.createChatCompletion({
@@ -98,13 +103,13 @@ scrollToBottom = () => {
       this.responseFromPreference = completion.data.choices[0].message
 
     } else {
-    // speach to text Whisper
-    this.url = URL.createObjectURL(audio);
-    console.log('Opaa', this.openai)
+      // speach to text Whisper
+      this.url = URL.createObjectURL(audio);
+      console.log('Opaa', this.openai)
       const formData = new FormData();
       formData.append('file', audio, 'test.wav');
       formData.append('model', 'whisper-1');
-  
+
       const transcriptionResponse = await this.http.post<any>('https://api.openai.com/v1/audio/transcriptions', formData,
         {
           headers: {
@@ -113,12 +118,12 @@ scrollToBottom = () => {
           },
         }
       ).toPromise();
-  
+
       this.transcribedText = transcriptionResponse?.text || '';
       console.log(this.transcribedText)
 
       // Ask chat gpt and get a response
-      if(this.transcribedText){
+      if (this.transcribedText) {
         const completion = await this.openai.createChatCompletion({
           model: 'gpt-3.5-turbo',
           messages: [
@@ -151,13 +156,14 @@ scrollToBottom = () => {
             this.response.audio = this.audioUrlFromEleven;
             console.log(this.audioUrlFromEleven)
 
-            this.transcriptions.push({ 
+            this.transcriptions.push({
               transcript: this.transcribedText,
               audioUrl: audio,
               role: ChatCompletionRequestMessageRoleEnum.User,
               response: this.response
             });
 
+            this.loading= false;
             console.log(this.transcriptions)
           } else {
             const errorData = await responseFromEleven.json();
@@ -165,7 +171,7 @@ scrollToBottom = () => {
           }
         }
       }
-    }  
+    }
   }
 
   errorCallback(error: any) {

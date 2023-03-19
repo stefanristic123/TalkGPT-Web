@@ -1,13 +1,9 @@
 
-<div *ngIf="!responseFromPreference">
+<div *ngIf="hidePreferences">
   <form [formGroup]="form" >
-    <!-- jos malo -->
-    
       <label for="first-name">Add system preference: </label>
       <input id="first-name" type="text" formControlName="text">
-    
     </form>
-    
     <button (click)="onSubmit()">Submit</button>
 </div>
 
@@ -28,12 +24,14 @@
         <source [src]="sanitize(transcription.response.audio)" type="audio/wav">
       </audio>
     </div>
-</div>
+  </div>
 </div>
 
-<!--The content below is only a placeholder and can be replaced.-->
+<div *ngIf="loading">
+  <h3> the AI is doing his job...</h3>
+</div>
+
 <div style="text-align:center; margin: auto; padding-top: 25px;">
-
   <div (click)="initiateRecording()" class="micon"  *ngIf="!recording">
     <span class='CNToggle' title='Voice recognition enabled. Click to disable' data-cn='micon'>🎙️</span>
     <a class="btn btn-primary"> Start </a>
@@ -42,11 +40,4 @@
     <span class='CNToggle' title='Voice recognition disabled. Click to enable' data-cn='micoff'>🤫 </span>
     <a class="btn btn-danger" > Stop </a>
   </div>
-    <div class="clearfix"></div>
-    <!-- <audio controls="" *ngIf="url">
-        <source [src]="sanitize(url)" type="audio/wav">
-    </audio> -->
-
 </div>
-
-<!-- <button (click)="opa()">play</button> -->
