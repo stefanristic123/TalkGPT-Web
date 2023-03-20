@@ -1,23 +1,48 @@
 
-<div *ngIf="hidePreferences">
-  <form [formGroup]="form" >
-      <label for="first-name">Add system preference: </label>
-      <input id="first-name" type="text" formControlName="text">
-    </form>
-    <button (click)="onSubmit()">Submit</button>
+<div class="header">
+  <div  class="loading">
+    <h3 style="color: black; text-align: start;"> Talk to me</h3>
+  </div>
 </div>
 
-<div #content style="height: 80vh;overflow: auto;flex-direction: column-reverse;" >
+<div #content class="messages-content" >
+    <div *ngIf="hidePreferences" style="padding-top: 50px;">
+      <div class="loading">
+        <h3>Add system preference: </h3>
+      </div>
+      <div>
+        <div class="formData">
+          <form [formGroup]="form" >
+            <label class="custom-field three opa">
+              <input id="first-name" type="text" formControlName="text" placeholder="&nbsp;"/>
+              <span class="placeholder">Add preference</span>
+              <span class="border"></span>
+            </label>
+          </form>
+          <div>
+            <button class="cupa" (click)="onSubmit()">Submit</button>
+          </div>
+        </div>
+        <p class="system-text">Act like you are a spanish teacher.  Your name is Sharon.  Speak like a poet...</p>
+      </div>
+
+
+      <div class="loading">
+        <h3>Or just Send a message...</h3>
+      </div>
+    </div>
+
   <div #messages *ngFor="let transcription of transcriptions" class="messages">
-  <h4>{{ transcription.role }}</h4>
+
+  <h4 class="user-role">You</h4>
     <div class="user">
       <p>{{ transcription.transcript }}</p>
       <audio controls >
         <source [src]="sanitize(url)" type="audio/wav">
       </audio>
-  
     </div>
-    <h4 style="text-align: end;">{{ transcription.response.role }}</h4>
+
+    <h4 class="assistent-role">Assistent</h4>
     <div class="assistent">
       <p>{{ transcription.response.content }}</p>
       <audio controls >
@@ -25,19 +50,28 @@
       </audio>
     </div>
   </div>
+    <div *ngIf="loading" class="loading">
+      <h3>The AI is doing his job...</h3>
+    </div>
 </div>
 
-<div *ngIf="loading">
-  <h3> the AI is doing his job...</h3>
-</div>
+<div class="footer">
+  <div>
+    <div (click)="initiateRecording()" class="micon"  *ngIf="!recording">
+      <!-- <i class="fas fa-microphone" title='Voice recognition enabled. Click to disable'></i> -->
+      <span class="material-symbols-outlined start" title='Voice recognition enabled. Click to disable'>mic</span>
+      <!-- <span class='CNToggle' title='Voice recognition enabled. Click to disable' data-cn='micon'>🎙️</span> -->
+    </div>
+    <a class="btn-start" *ngIf="!recording"> start </a>
+  </div>
 
-<div style="text-align:center; margin: auto; padding-top: 25px;">
-  <div (click)="initiateRecording()" class="micon"  *ngIf="!recording">
-    <span class='CNToggle' title='Voice recognition enabled. Click to disable' data-cn='micon'>🎙️</span>
-    <a class="btn btn-primary"> Start </a>
+  <div>
+    <div (click)="stopRecording()" class="micoff" *ngIf="recording">
+      <span class="material-symbols-outlined stop" title='Voice recognition disabled. Click to enable'>mic</span>
+      <!-- <i class="fas fa-microphone" title='Voice recognition disabled. Click to enable'></i> -->
+      <!-- <span class='CNToggle' title='Voice recognition disabled. Click to enable' data-cn='micoff'>🤫 </span> -->
+    </div>
+    <a class="btn-stop" *ngIf="recording"> recording </a>
   </div>
-  <div (click)="stopRecording()" class="micoff" *ngIf="recording">
-    <span class='CNToggle' title='Voice recognition disabled. Click to enable' data-cn='micoff'>🤫 </span>
-    <a class="btn btn-danger" > Stop </a>
-  </div>
+
 </div>
