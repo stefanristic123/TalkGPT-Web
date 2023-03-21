@@ -44,9 +44,9 @@
 
     <h4 class="assistent-role">Assistent</h4>
     <div class="assistent">
-      <p>{{ transcription.response.content }}</p>
-      <audio controls >
-        <source [src]="sanitize(transcription.response.audio)" type="audio/wav">
+      <p>{{ transcription?.response?.content }}</p>
+      <audio controls autoplay>
+        <source [src]="sanitize(transcription?.response?.audio)" type="audio/wav">
       </audio>
     </div>
   </div>
