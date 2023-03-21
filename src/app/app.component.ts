@@ -35,7 +35,7 @@ export class AppComponent implements AfterViewInit {
   url: any;
   error: any;
   loading = false;
-  transcriptions: { transcript: any, role: any, audioUrl: any, response: any }[] = [];
+  transcriptions: any[] = [];
 
   constructor(
     private domSanitizer: DomSanitizer, 
@@ -120,7 +120,14 @@ export class AppComponent implements AfterViewInit {
       ).toPromise();
 
       this.transcribedText = transcriptionResponse?.text || '';
-      console.log(this.transcribedText)
+
+      this.transcriptions.push({
+        transcript: this.transcribedText,
+        audioUrl: audio,
+        role: ChatCompletionRequestMessageRoleEnum.User,
+      });
+      console.log(this.transcriptions)
+
 
       // Ask chat gpt and get a response
       if (this.transcribedText) {
@@ -155,13 +162,15 @@ export class AppComponent implements AfterViewInit {
             this.audioUrlFromEleven = URL.createObjectURL(audioBlob);
             this.response.audio = this.audioUrlFromEleven;
             console.log(this.audioUrlFromEleven)
-
+            this.transcriptions.pop();
             this.transcriptions.push({
               transcript: this.transcribedText,
               audioUrl: audio,
               role: ChatCompletionRequestMessageRoleEnum.User,
               response: this.response
             });
+            // this.transcriptions[this.transcriptions.length - 1].response = this.response;
+            // console.log(this.transcriptions);
 
             this.loading= false;
             console.log(this.transcriptions)

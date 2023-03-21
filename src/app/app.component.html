@@ -43,10 +43,10 @@
     </div>
 
     <h4 class="assistent-role">Assistent</h4>
-    <div class="assistent">
+    <div class="assistent" *ngIf="transcription.response">
       <p>{{ transcription?.response?.content }}</p>
       <audio controls autoplay>
-        <source [src]="sanitize(transcription?.response?.audio)" type="audio/wav">
+        <source [src]="sanitize(transcription.response.audio)" type="audio/wav">
       </audio>
     </div>
   </div>
