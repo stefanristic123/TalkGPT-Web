@@ -5,186 +5,23 @@ import * as RecordRTC from 'recordrtc';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment.development';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent {
+  title = "talkgt";
 
-  @ViewChildren('messages') messagescss!: QueryList<any>;
-  @ViewChild('content') contentcss!: ElementRef;
-  public transcribedText?: string;
-  response: any;
-  responseFromPreference: any
-  form = new FormGroup({
-    text: new FormControl(''),
-  });
+  constructor(public afAuth: AngularFireAuth) { }
 
-  voice_id = "21m00Tcm4TlvDq8ikWAM"
-  api_key_eleven = environment.api_key_eleven
-  api_key = environment.api_key;
-  configuration = new Configuration({ apiKey: environment.api_key });
-  openai = new OpenAIApi(this.configuration);
-
-  audioUrlFromEleven: any;
-  record: any;
-  recording = false;
-  hidePreferences = true;
-  url: any;
-  error: any;
-  loading = false;
-  transcriptions: any[] = [];
-
-  constructor(
-    private domSanitizer: DomSanitizer, 
-    private http: HttpClient) { }
-
-  ngAfterViewInit() {
-    this.scrollToBottom();
-    this.messagescss.changes.subscribe(this.scrollToBottom);
+  ngOnInit(): void {
   }
 
-  scrollToBottom = () => {
-    try {
-      this.contentcss.nativeElement.scrollTop = this.contentcss.nativeElement.scrollHeight;
-    } catch (err) { }
-  }
-
-  onSubmit() {
-    console.log(this.form.value.text)
-    let systemPreference = this.form.value.text
-    this.transcript(null, systemPreference);
-  }
-
-  sanitize(url: string) {
-    return this.domSanitizer.bypassSecurityTrustUrl(url);
-  }
-
-  initiateRecording() {
-    this.recording = true;
-    this.hidePreferences = false
-    let mediaConstraints = { video: false, audio: true };
-    navigator.mediaDevices.getUserMedia(mediaConstraints).then(this.successCallback.bind(this), this.errorCallback.bind(this));
-  }
-
-  successCallback(stream: any) {
-    var options: any = {
-      mimeType: "audio/wav",
-      numberOfAudioChannels: 1
-    };
-    var StereoAudioRecorder = RecordRTC.StereoAudioRecorder;
-    this.record = new StereoAudioRecorder(stream, options);
-    this.record.record();
-  }
-
-  stopRecording() {
-    this.recording = false;
-    this.record.stop(this.processRecording.bind(this));
-  }
-
-  public async processRecording(blob: any): Promise<any> {
-    console.log(blob)
-    this.transcript(blob, null);
-  }
-
-  public async transcript(audio: any, systemPreference: any): Promise<any> {
-    this.loading= true;
-    // system prefecence
-    if (systemPreference) {
-      const completion = await this.openai.createChatCompletion({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: ChatCompletionRequestMessageRoleEnum.System, content: systemPreference },
-        ],
-      });
-      console.log(completion.data.choices[0].message);
-      this.responseFromPreference = completion.data.choices[0].message
-
-    } else {
-      // speach to text Whisper
-      this.url = URL.createObjectURL(audio);
-      console.log('Opaa', this.openai)
-      const formData = new FormData();
-      formData.append('file', audio, 'test.wav');
-      formData.append('model', 'whisper-1');
-
-      const transcriptionResponse = await this.http.post<any>('https://api.openai.com/v1/audio/transcriptions', formData,
-        {
-          headers: {
-            Authorization: `Bearer ${this.api_key}`,
-            Accept: 'application/json',
-          },
-        }
-      ).toPromise();
-
-      this.transcribedText = transcriptionResponse?.text || '';
-
-      this.transcriptions.push({
-        transcript: this.transcribedText,
-        audioUrl: audio,
-        role: ChatCompletionRequestMessageRoleEnum.User,
-      });
-      console.log(this.transcriptions)
-
-
-      // Ask chat gpt and get a response
-      if (this.transcribedText) {
-        const completion = await this.openai.createChatCompletion({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: ChatCompletionRequestMessageRoleEnum.System, content: this.transcribedText },
-          ],
-        });
-
-        console.log(completion.data.choices[0].message);
-        this.response = completion.data.choices[0].message
-
-        console.log(completion.data.choices[0].message?.content);
-        let contentFromGPT = completion.data.choices[0].message?.content
-        if (contentFromGPT) {
-          const url = `https://api.elevenlabs.io/v1/text-to-speech/${this.voice_id}`;
-          const body = {
-            text: contentFromGPT,
-            voice_settings: { stability: 0, similarity_boost: 0 }
-          };
-          const responseFromEleven = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'xi-api-key': this.api_key_eleven
-            },
-            body: JSON.stringify(body)
-          });
-          if (responseFromEleven.ok) {
-            const audioBlob = await responseFromEleven.blob();
-            this.audioUrlFromEleven = URL.createObjectURL(audioBlob);
-            this.response.audio = this.audioUrlFromEleven;
-            console.log(this.audioUrlFromEleven)
-            this.transcriptions.pop();
-            this.transcriptions.push({
-              transcript: this.transcribedText,
-              audioUrl: audio,
-              role: ChatCompletionRequestMessageRoleEnum.User,
-              response: this.response
-            });
-            // this.transcriptions[this.transcriptions.length - 1].response = this.response;
-            // console.log(this.transcriptions);
-
-            this.loading= false;
-            console.log(this.transcriptions)
-          } else {
-            const errorData = await responseFromEleven.json();
-            throw new Error(`Text to speech conversion failed: ${errorData.detail[0].msg}`);
-          }
-        }
-      }
-    }
-  }
-
-  errorCallback(error: any) {
-    this.error = 'Can not play audio in your browser';
+  logout(): void {
+      this.afAuth.signOut();
   }
 
 }

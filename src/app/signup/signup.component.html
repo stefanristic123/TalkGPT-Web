@@ -1,0 +1,32 @@
+<!-- <button routerLink="/home">
+    Home
+</button> -->
+<div class="from">
+    <form [formGroup]="signupForm" (ngSubmit)="signup()">
+        <div>
+            <label class="custom-field three opa">
+                <input formControlName="displayName" type="text" placeholder="&nbsp;" />
+                <span class="placeholder">Username</span>
+                <span class="border"></span>
+            </label>
+        </div>
+        <div>
+            <label class="custom-field three opa">
+                <input id="email" formControlName="email" type="email" placeholder="&nbsp;" />
+                <span class="placeholder">Email</span>
+                <span class="border"></span>
+            </label>
+        </div>
+        <div>
+            <label class="custom-field three opa">
+                <input id="password" formControlName="password" type="password" placeholder="&nbsp;" />
+                <span class="placeholder">Password</span>
+                <span class="border"></span>
+            </label>
+        </div>
+        <div *ngIf="firebaseErrorMessage != ''" class="error-style">
+            <span>{{ firebaseErrorMessage }}</span>
+        </div>
+        <button class="button-from" >Signup</button>
+    </form>
+</div>

@@ -1,0 +1,71 @@
+  <div #content class="messages-content" >
+      <div *ngIf="hidePreferences" style="padding-top: 50px;">
+        <div class="loading">
+          <h3>Add system preference: </h3>
+        </div>
+        <div>
+          <div class="formData">
+            <form [formGroup]="form" >
+              <label class="custom-field three opa">
+                <input id="first-name" type="text" formControlName="text" placeholder="&nbsp;"/>
+                <span class="placeholder">Add preference</span>
+                <span class="border"></span>
+              </label>
+            </form>
+            <div>
+              <button class="button" (click)="onSubmit()">Submit</button>
+            </div>
+          </div>
+          <p class="system-text">Act like you are a spanish teacher.  Your name is Sharon.  Speak like a poet...</p>
+        </div>
+  
+  
+        <div class="loading">
+          <h3>Or just Send a message...</h3>
+        </div>
+      </div>
+  
+    <div #messages *ngFor="let transcription of transcriptions" class="messages">
+  
+    <h4 class="user-role">You</h4>
+      <div class="user">
+        <p>{{ transcription.transcript }}</p>
+        <audio controls >
+          <source [src]="sanitize(url)" type="audio/wav">
+        </audio>
+      </div>
+  
+      <h4 class="assistent-role">Assistent</h4>
+      <div class="assistent" *ngIf="transcription.response">
+        <p>{{ transcription?.response?.content }}</p>
+        <audio controls autoplay>
+          <source [src]="sanitize(transcription.response.audio)" type="audio/wav">
+        </audio>
+      </div>
+    </div>
+      <div *ngIf="loading" class="loading">
+        <h3>The AI is doing his job...</h3>
+      </div>
+  </div>
+  
+  <div class="footer">
+    <div>
+      <div (click)="initiateRecording()" class="micon"  *ngIf="!recording">
+        <!-- <i class="fas fa-microphone" title='Voice recognition enabled. Click to disable'></i> -->
+        <span class="material-symbols-outlined start" title='Voice recognition enabled. Click to disable'>mic</span>
+        <!-- <span class='CNToggle' title='Voice recognition enabled. Click to disable' data-cn='micon'>🎙️</span> -->
+      </div>
+      <a class="btn-start" *ngIf="!recording"> start </a>
+    </div>
+  
+    <div>
+      <div (click)="stopRecording()" class="micoff" *ngIf="recording">
+        <span class="material-symbols-outlined stop" title='Voice recognition disabled. Click to enable'>mic</span>
+        <!-- <i class="fas fa-microphone" title='Voice recognition disabled. Click to enable'></i> -->
+        <!-- <span class='CNToggle' title='Voice recognition disabled. Click to enable' data-cn='micoff'>🤫 </span> -->
+      </div>
+      <a class="btn-stop" *ngIf="recording"> recording </a>
+    </div>
+  
+  </div>
+  
