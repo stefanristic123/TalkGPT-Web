@@ -1,0 +1,11 @@
+.stripe {
+    display: flex;
+    justify-content: center;
+    padding-top: 10%;
+}
+
+stripe-pricing-table  {
+    box-shadow: 1px 10px 50px -13px rgba(0,0,0,0.75);
+-webkit-box-shadow: 1px 10px 50px -13px rgba(0,0,0,0.75);
+-moz-box-shadow: 1px 10px 50px -13px rgba(0,0,0,0.75);
+}
