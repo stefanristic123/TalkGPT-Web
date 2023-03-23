@@ -103,11 +103,16 @@ body {
     top: 22px;
     line-height: 100%;
     transform: translateY(-50%);
-    color: #aaa;
+    /* color: #aaa; */
+    color: #000;
     transition:
         top 0.3s ease,
         color 0.3s ease,
         font-size 0.3s ease;
+}
+
+a {
+    text-decoration: none !important;
 }
 
 .custom-field input.dirty+.placeholder,

@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Configuration, OpenAIApi, ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum } from 'openai';
 import * as RecordRTC from 'recordrtc';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -11,21 +11,19 @@ import { environment } from 'src/environments/environment.development';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements AfterViewInit{
+export class DashboardComponent implements AfterViewInit {
   @ViewChildren('messages') messagescss!: QueryList<any>;
   @ViewChild('content') contentcss!: ElementRef;
   public transcribedText?: string;
   response: any;
   responseFromPreference: any
   form = new FormGroup({
-    text: new FormControl(''),
+    apiKeyOpenAi: new FormControl('', Validators.required),
+    apiKeyElevenLabs: new FormControl('', Validators.required),
   });
 
+  dataSource: any
   voice_id = "21m00Tcm4TlvDq8ikWAM"
-  api_key_eleven = environment.api_key_eleven
-  api_key = environment.api_key;
-  configuration = new Configuration({ apiKey: environment.api_key });
-  openai = new OpenAIApi(this.configuration);
 
   audioUrlFromEleven: any;
   record: any;
@@ -34,11 +32,16 @@ export class DashboardComponent implements AfterViewInit{
   url: any;
   error: any;
   loading = false;
+  dataIsComming = true;
   transcriptions: any[] = [];
+  dataFromLocal: any;
+  showHideInputs = true;
 
   constructor(
-    private domSanitizer: DomSanitizer, 
-    private http: HttpClient) { }
+    private domSanitizer: DomSanitizer,
+    private http: HttpClient) {
+    this.dataFromLocal = localStorage.getItem('DATA');
+  }
 
   ngAfterViewInit() {
     this.scrollToBottom();
@@ -52,9 +55,20 @@ export class DashboardComponent implements AfterViewInit{
   }
 
   onSubmit() {
-    console.log(this.form.value.text)
-    let systemPreference = this.form.value.text
-    this.transcript(null, systemPreference);
+    console.log(this.form.value.apiKeyElevenLabs)
+    // let systemPreference = this.form.value.text
+    if (this.form.valid) {
+      this.dataSource = this.form.value
+      localStorage.setItem('DATA', JSON.stringify(this.dataSource));
+      // let data: any = localStorage.getItem('DATA');
+      // console.log(JSON.parse(data));
+      this.dataFromLocal = localStorage.getItem('DATA');
+      this.dataIsComming = true;
+      // this.initiateRecording();
+    } else {
+      console.log("Please add the keys it's not that hard.")
+    }
+
   }
 
   sanitize(url: string) {
@@ -63,7 +77,6 @@ export class DashboardComponent implements AfterViewInit{
 
   initiateRecording() {
     this.recording = true;
-    this.hidePreferences = false
     let mediaConstraints = { video: false, audio: true };
     navigator.mediaDevices.getUserMedia(mediaConstraints).then(this.successCallback.bind(this), this.errorCallback.bind(this));
   }
@@ -85,101 +98,138 @@ export class DashboardComponent implements AfterViewInit{
 
   public async processRecording(blob: any): Promise<any> {
     console.log(blob)
-    this.transcript(blob, null);
+    this.transcript(blob);
   }
 
-  public async transcript(audio: any, systemPreference: any): Promise<any> {
-    this.loading= true;
+  public async transcript(audio: any): Promise<any> {
+    // , systemPreference: any
     // system prefecence
-    if (systemPreference) {
-      const completion = await this.openai.createChatCompletion({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: ChatCompletionRequestMessageRoleEnum.System, content: systemPreference },
-        ],
-      });
-      console.log(completion.data.choices[0].message);
-      this.responseFromPreference = completion.data.choices[0].message
+    // if (systemPreference) {
+    //   const completion = await this.openai.createChatCompletion({
+    //     model: 'gpt-3.5-turbo',
+    //     messages: [
+    //       { role: ChatCompletionRequestMessageRoleEnum.System, content: systemPreference },
+    //     ],
+    //   });
+    //   console.log(completion.data.choices[0].message);
+    //   this.responseFromPreference = completion.data.choices[0].message
+    // } else {
+    // speach to text Whisper
+    this.hidePreferences = false;
+    this.dataIsComming = false;
+    this.loading = true;
+    let localKeys: any = localStorage.getItem('DATA')
+    this.dataFromLocal = JSON.parse(localKeys);
+    let api_key = this.dataFromLocal.apiKeyOpenAi;
+    let configuration = new Configuration({ apiKey: api_key });
+    let openai = new OpenAIApi(configuration);
+    let api_key_eleven: any = this.dataFromLocal.apiKeyElevenLabs;
+    this.url = URL.createObjectURL(audio);
+    const formData = new FormData();
+    formData.append('file', audio, 'test.wav');
+    formData.append('model', 'whisper-1');
 
-    } else {
-      // speach to text Whisper
-      this.url = URL.createObjectURL(audio);
-      console.log('Opaa', this.openai)
-      const formData = new FormData();
-      formData.append('file', audio, 'test.wav');
-      formData.append('model', 'whisper-1');
+    //transkrip pitanja u tekst
+    await this.http.post<any>('https://api.openai.com/v1/audio/transcriptions', formData,
+      {
+        headers: {
+          Authorization: `Bearer ${api_key}`,
+          Accept: 'application/json',
+        },
+      }
+    ).subscribe({
+      next:async res=>{
 
-      const transcriptionResponse = await this.http.post<any>('https://api.openai.com/v1/audio/transcriptions', formData,
-        {
-          headers: {
-            Authorization: `Bearer ${this.api_key}`,
-            Accept: 'application/json',
-          },
+        this.transcribedText = res?.text || '';
+        this.transcriptions.push({
+          transcript: this.transcribedText,
+          audioUrl: audio,
+          role: ChatCompletionRequestMessageRoleEnum.User,
+        });
+    
+        console.log(this.transcriptions)
+        // this.loading = true;
+        // Ask chat gpt and get a response
+        if (!this.transcribedText) {
+          console.log("My transcription faild");
+          return;
         }
-      ).toPromise();
-
-      this.transcribedText = transcriptionResponse?.text || '';
-
-      this.transcriptions.push({
-        transcript: this.transcribedText,
-        audioUrl: audio,
-        role: ChatCompletionRequestMessageRoleEnum.User,
-      });
-      console.log(this.transcriptions)
-
-
-      // Ask chat gpt and get a response
-      if (this.transcribedText) {
-        const completion = await this.openai.createChatCompletion({
+    
+        const completion = await openai.createChatCompletion({
           model: 'gpt-3.5-turbo',
+          // usage: {prompt_tokens: 56, completion_tokens: 31, total_tokens: 87},
           messages: [
-            { role: ChatCompletionRequestMessageRoleEnum.System, content: this.transcribedText },
+            { role: ChatCompletionRequestMessageRoleEnum.User, content: this.transcribedText },
           ],
         });
-
-        console.log(completion.data.choices[0].message);
+    
+        console.log(completion.data);
         this.response = completion.data.choices[0].message
-
+    
         console.log(completion.data.choices[0].message?.content);
         let contentFromGPT = completion.data.choices[0].message?.content
-        if (contentFromGPT) {
-          const url = `https://api.elevenlabs.io/v1/text-to-speech/${this.voice_id}`;
-          const body = {
-            text: contentFromGPT,
-            voice_settings: { stability: 0, similarity_boost: 0 }
-          };
-          const responseFromEleven = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'xi-api-key': this.api_key_eleven
-            },
-            body: JSON.stringify(body)
-          });
-          if (responseFromEleven.ok) {
-            const audioBlob = await responseFromEleven.blob();
-            this.audioUrlFromEleven = URL.createObjectURL(audioBlob);
-            this.response.audio = this.audioUrlFromEleven;
-            console.log(this.audioUrlFromEleven)
-            this.transcriptions.pop();
-            this.transcriptions.push({
-              transcript: this.transcribedText,
-              audioUrl: audio,
-              role: ChatCompletionRequestMessageRoleEnum.User,
-              response: this.response
-            });
-            // this.transcriptions[this.transcriptions.length - 1].response = this.response;
-            // console.log(this.transcriptions);
 
-            this.loading= false;
-            console.log(this.transcriptions)
-          } else {
-            const errorData = await responseFromEleven.json();
-            throw new Error(`Text to speech conversion failed: ${errorData.detail[0].msg}`);
-          }
+        this.response.content = contentFromGPT;
+        
+        if (!contentFromGPT) {
+          console.log('Response from GPT faild');
+          return;
         }
-      }
-    }
+
+        const url = `https://api.elevenlabs.io/v1/text-to-speech/${this.voice_id}`;
+        const body = {
+          text: contentFromGPT,
+          voice_settings: { stability: 0, similarity_boost: 0 }
+        };
+    
+        const responseFromEleven = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'xi-api-key': api_key_eleven
+          },
+          body: JSON.stringify(body)
+        });
+            
+        if (!responseFromEleven.ok) {
+          const errorData = await responseFromEleven.json();
+          if(errorData.detail.status == 'quota_exceeded')
+          {
+            console.log('ERORR ELEVEN>>>>>>>>>')
+            //todo show some interface to 
+            this.dataFromLocal = false;
+            this.showHideInputs = true;
+          }
+          
+          // throw new Error(`Text to speech conversion failed: ${errorData.detail}`);
+        } else {
+    
+        const audioBlob = await responseFromEleven.blob();
+        this.audioUrlFromEleven = URL.createObjectURL(audioBlob);
+        this.response.audio = this.audioUrlFromEleven;
+        console.log(this.audioUrlFromEleven)
+        // this.transcriptions.pop();
+        // this.transcriptions.push({
+          // transcript: this.transcribedText,
+          // audioUrl: audio,
+          // role: ChatCompletionRequestMessageRoleEnum.User,
+          // response: this.response
+        // });
+        this.lastFromTranscription.response = this.response;
+        console.log(this.transcriptions);
+    
+        this.loading = false;
+        this.dataIsComming = true;
+        console.log(this.transcriptions)
+        // }
+        }
+      },
+      error:err=>console.log(err.message)
+    })
+  }
+
+  private get lastFromTranscription(){
+    return this.transcriptions[this.transcriptions.length - 1];
   }
 
   errorCallback(error: any) {

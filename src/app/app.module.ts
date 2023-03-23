@@ -29,7 +29,7 @@ import { AngularFireAuthModule } from "@angular/fire/compat/auth";
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    AngularFireModule.initializeApp(environment.firebase),
+    // AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
   ],
   schemas: [

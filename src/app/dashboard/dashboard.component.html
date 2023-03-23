@@ -1,71 +1,93 @@
-  <div #content class="messages-content" >
-      <div *ngIf="hidePreferences" style="padding-top: 50px;">
-        <div class="loading">
-          <h3>Add system preference: </h3>
-        </div>
+<div #content class="messages-content">
+  <div  *ngIf="!dataFromLocal" style="padding-top: 50px;">
+    <div class="loading" *ngStyle="{ 'display': (showHideInputs ? 'none' : 'block') }">
+      <h3 style="color: #000; font-weight: bold;">OK befor we start talking we need to add some keys <br>it's just a bit of work don't be sceard</h3>
+    </div>
+    <div>
+      <!-- <div class="formData">
+        <form [formGroup]="form">
+          <label class="custom-field three opa">
+            <input id="first-name" type="text" formControlName="text" placeholder="&nbsp;" />
+            <span class="placeholder">Add preference</span>
+            <span class="border"></span>
+          </label>
+        </form>
         <div>
-          <div class="formData">
-            <form [formGroup]="form" >
-              <label class="custom-field three opa">
-                <input id="first-name" type="text" formControlName="text" placeholder="&nbsp;"/>
-                <span class="placeholder">Add preference</span>
-                <span class="border"></span>
-              </label>
-            </form>
-            <div>
-              <button class="button" (click)="onSubmit()">Submit</button>
-            </div>
+          <button class="button" (click)="onSubmit()">Submit</button>
+        </div>
+      </div> -->
+
+      <div class="from" style="margin-top: 0px;">
+        <form [formGroup]="form">
+          <div class="text-exp" >
+            <p>Go to: <a href="https://platform.openai.com/account/api-keys">OpenAI API key</a> click + Create new secret key and Copy it and Past it in OpenAI Key field</p>
           </div>
-          <p class="system-text">Act like you are a spanish teacher.  Your name is Sharon.  Speak like a poet...</p>
-        </div>
-  
-  
-        <div class="loading">
-          <h3>Or just Send a message...</h3>
-        </div>
+          <div style="margin-bottom: 50px;" >
+            <label class="custom-field three opa">
+              <input id="apiKeyOpenAi" type="text" formControlName="apiKeyOpenAi" placeholder="&nbsp;" />
+              <span class="placeholder" style="text-align: left;">Enter OpenAI Key</span>
+              <span class="border"></span>
+            </label>
+            <p class="text-info">This API key allows us to send messages to ChatGPT</p>
+
+          </div>
+          <div class="text-exp">
+            <p>Go to: <a href="https://beta.elevenlabs.io/sign-up">Eleven Labs</a> create account, click profile image choose Profile and Copy API key and Past it</p>
+          </div>
+          <div>
+            <label class="custom-field three opa">
+              <input id="apiKeyElevenLabs" type="text" formControlName="apiKeyElevenLabs" placeholder="&nbsp;" />
+              <span style="text-align: left;" class="placeholder">Enter Eleven Labs Key</span>
+              <span class="border"></span>
+            </label>
+            <p class="text-info">This API gives ChatGPT a voice</p>
+
+          </div>
+          <button class="button-from" [disabled]="form.invalid" (click)="onSubmit()">Submit</button>
+        </form>
       </div>
-  
-    <div #messages *ngFor="let transcription of transcriptions" class="messages">
-  
-    <h4 class="user-role">You</h4>
-      <div class="user">
-        <p>{{ transcription.transcript }}</p>
-        <audio controls >
-          <source [src]="sanitize(url)" type="audio/wav">
-        </audio>
-      </div>
-  
-      <h4 class="assistent-role">Assistent</h4>
-      <div class="assistent" *ngIf="transcription.response">
-        <p>{{ transcription?.response?.content }}</p>
-        <audio controls autoplay>
-          <source [src]="sanitize(transcription.response.audio)" type="audio/wav">
-        </audio>
-      </div>
+      <!-- <p class="system-text">Act like you are a spanish teacher. Your name is Sharon. Speak like a poet...</p> -->
     </div>
-      <div *ngIf="loading" class="loading">
-        <h3>The AI is doing his job...</h3>
-      </div>
   </div>
-  
-  <div class="footer">
-    <div>
-      <div (click)="initiateRecording()" class="micon"  *ngIf="!recording">
-        <!-- <i class="fas fa-microphone" title='Voice recognition enabled. Click to disable'></i> -->
-        <span class="material-symbols-outlined start" title='Voice recognition enabled. Click to disable'>mic</span>
-        <!-- <span class='CNToggle' title='Voice recognition enabled. Click to disable' data-cn='micon'>🎙️</span> -->
-      </div>
-      <a class="btn-start" *ngIf="!recording"> start </a>
+
+  <div class="loading" *ngIf="dataFromLocal && hidePreferences" style="padding-top: 50px;">
+    <h3 style="color: #000;font-weight: bold;">All set Record a message...</h3>
+  </div>
+
+  <div #messages *ngFor="let transcription of transcriptions" class="messages">
+    <h4 class="user-role">You</h4>
+    <div class="user">
+      <p>{{ transcription.transcript }}</p>
+      <audio controls>
+        <source [src]="sanitize(url)" type="audio/wav">
+      </audio>
     </div>
-  
-    <div>
+
+    <h4 class="assistent-role">Assistent</h4>
+    <div class="assistent" *ngIf="transcription.response">
+      <p>{{ transcription?.response?.content }}</p>
+      <audio controls autoplay>
+        <source [src]="sanitize(transcription.response.audio)" type="audio/wav">
+      </audio>
+    </div>
+  </div>
+  <div *ngIf="loading" class="loading" style="padding-top: 50px;">
+    <h3>The AI is doing his job...</h3>
+  </div>
+</div>
+<div class="footer">
+  <div *ngIf="dataIsComming">
+    <div *ngIf="dataFromLocal">
+      <div (click)="initiateRecording()" class="micon" *ngIf="!recording">
+        <span class="material-symbols-outlined start" title='Voice recognition enabled. Click to disable'>mic</span>
+      </div>
+      <a class="btn-start" *ngIf="!recording">start</a>
+    </div>
+    <div *ngIf="dataFromLocal">
       <div (click)="stopRecording()" class="micoff" *ngIf="recording">
         <span class="material-symbols-outlined stop" title='Voice recognition disabled. Click to enable'>mic</span>
-        <!-- <i class="fas fa-microphone" title='Voice recognition disabled. Click to enable'></i> -->
-        <!-- <span class='CNToggle' title='Voice recognition disabled. Click to enable' data-cn='micoff'>🤫 </span> -->
       </div>
-      <a class="btn-stop" *ngIf="recording"> recording </a>
+      <a class="btn-stop" *ngIf="recording">recording</a>
     </div>
-  
   </div>
-  
+</div>

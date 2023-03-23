@@ -10,6 +10,18 @@
     font-size: 14px;
 }
 
+.text-exp {
+    text-align: center;
+    color: #ababab;
+    font-size: 18px;
+}
+
+.text-info {
+    color: #ababab; 
+    font-size: 14px;
+    margin: 5px 0px 10px;
+}
+
 .messages-content {
     height: 72.5vh;
     overflow: auto;
@@ -19,7 +31,7 @@
 }
 
 .messages {
-    width: 700px;
+    max-width: 700px;
     margin: auto;
 }
 

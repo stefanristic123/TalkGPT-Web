@@ -4,11 +4,16 @@
             <h2 style="color: black; text-align: start; margin-left: 20px;"> TalkGPT +</h2>
         </div>
         <div style="display: flex">
+            <a class="btn-header" href="https://chrome.google.com/webstore/detail/speak-to-chatgpt/nodogckedbjonefieafgjckbhjdehggc" target="_blank">Chrom Extension</a>
+            <a class="btn-header" href="https://www.buymeacoffee.com/stefanristic" target="_blank">Buy me a beer</a>
+        </div>
+        <!-- <div style="display: flex">
             <button class="btn-header" routerLink="/home">Home</button>
             <button *ngIf="!(afAuth.user | async)" class="btn-header" routerLink="/signup">Signup</button>
             <button *ngIf="!(afAuth.user | async)" class="btn-header" routerLink="/login">Login</button>
             <button *ngIf="(afAuth.user | async)" class="btn-header" routerLink="/dashboard">Dashboard</button>
             <button *ngIf="(afAuth.user | async)" class="btn-header" (click)="logout()">Log out</button>
-        </div>
+        </div> -->
     </div>
+    <app-dashboard></app-dashboard>
 </router-outlet>
