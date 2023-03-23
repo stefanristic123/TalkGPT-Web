@@ -141,7 +141,7 @@ a {
     display: flex;
     align-items: center;
     padding-left: 12px;
-    borde-radius: 3px;
+    border-radius: 3px;
 }
 
 .custom-field.three .border::after,

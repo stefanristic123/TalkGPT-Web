@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service'
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+// import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 
 @Component({
@@ -15,7 +15,9 @@ export class SignupComponent implements OnInit {
   signupForm!: FormGroup;
   firebaseErrorMessage: string;
 
-  constructor(private authService: AuthService, private router: Router, private afAuth: AngularFireAuth) {
+  constructor(
+    // private authService: AuthService, private router: Router, private afAuth: AngularFireAuth
+    ) {
     this.firebaseErrorMessage = '';
   }
 

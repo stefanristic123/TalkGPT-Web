@@ -12,7 +12,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 
 import { AngularFireModule } from '@angular/fire/compat';
 import { environment } from '../environments/environment.development';
-import { AngularFireAuthModule } from "@angular/fire/compat/auth";
+// import { AngularFireAuthModule } from "@angular/fire/compat/auth";
 
 
 @NgModule({
@@ -30,7 +30,7 @@ import { AngularFireAuthModule } from "@angular/fire/compat/auth";
     FormsModule,
     ReactiveFormsModule,
     // AngularFireModule.initializeApp(environment.firebase),
-    AngularFireAuthModule,
+    // AngularFireAuthModule,
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA

@@ -5,7 +5,7 @@ import * as RecordRTC from 'recordrtc';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment.development';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+// import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Component({
   selector: 'app-root',
@@ -15,13 +15,13 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 export class AppComponent {
   title = "talkgt";
 
-  constructor(public afAuth: AngularFireAuth) { }
+  constructor() { }
 
   ngOnInit(): void {
   }
 
-  logout(): void {
-      this.afAuth.signOut();
-  }
+  // logout(): void {
+  //     this.afAuth.signOut();
+  // }
 
 }
