@@ -13,6 +13,9 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { AngularFireModule } from '@angular/fire/compat';
 import { environment } from '../environments/environment.development';
 // import { AngularFireAuthModule } from "@angular/fire/compat/auth";
+import {MatInputModule} from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatButtonModule} from '@angular/material/button';
 
 
 @NgModule({
@@ -31,6 +34,9 @@ import { environment } from '../environments/environment.development';
     ReactiveFormsModule,
     // AngularFireModule.initializeApp(environment.firebase),
     // AngularFireAuthModule,
+    MatInputModule,
+    BrowserAnimationsModule,
+    MatButtonModule
   ],
   schemas: [
     CUSTOM_ELEMENTS_SCHEMA

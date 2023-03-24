@@ -52,6 +52,11 @@
     color: #ababab;
 }
 
+  
+  .example-full-width {
+    width: 60%;
+  }
+
 .user {
     max-width: 500px;
     width: fit-content;

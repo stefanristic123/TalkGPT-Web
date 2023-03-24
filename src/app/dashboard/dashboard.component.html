@@ -18,16 +18,20 @@
       </div> -->
 
       <div class="from" style="margin-top: 0px;">
-        <form [formGroup]="form">
+        <form [formGroup]="form" >
           <div class="text-exp" >
             <p>Go to: <a target="_blank" href="https://platform.openai.com/account/api-keys">OpenAI API key</a> click + Create new secret key and Copy it and Past it in OpenAI Key field</p>
           </div>
           <div style="margin-bottom: 50px;" >
-            <label class="custom-field three opa">
+            <!-- <label class="custom-field three opa">
               <input id="apiKeyOpenAi" type="text" formControlName="apiKeyOpenAi" placeholder="&nbsp;" />
               <span class="placeholder" style="text-align: left;">Enter OpenAI Key</span>
               <span class="border"></span>
-            </label>
+            </label> -->
+            <mat-form-field class="example-full-width" appearance="outline">
+              <mat-label>Enter OpenAI Key</mat-label>
+              <input matInput formControlName="apiKeyOpenAi" placeholder="OpenAI Key">
+            </mat-form-field>
             <p class="text-info">This API key allows us to send messages to ChatGPT</p>
 
           </div>
@@ -35,15 +39,20 @@
             <p>Go to: <a target="_blank" href="https://beta.elevenlabs.io/sign-up">Eleven Labs</a> create account, click profile image choose Profile and Copy API key and Past it</p>
           </div>
           <div>
-            <label class="custom-field three opa">
+            <!-- <label class="custom-field three opa">
               <input id="apiKeyElevenLabs" type="text" formControlName="apiKeyElevenLabs" placeholder="&nbsp;" />
               <span style="text-align: left;" class="placeholder">Enter Eleven Labs Key</span>
               <span class="border"></span>
-            </label>
+            </label> -->
+
+            <mat-form-field class="example-full-width" appearance="outline">
+              <mat-label>Enter Eleven Labs Key</mat-label>
+              <input matInput formControlName="apiKeyElevenLabs" placeholder="Eleven Labs Key">
+            </mat-form-field>
             <p class="text-info">This API gives ChatGPT a voice</p>
 
           </div>
-          <button class="button-from" [disabled]="form.invalid" (click)="onSubmit()">Submit</button>
+          <button mat-raised-button [disabled]="form.invalid" (click)="onSubmit()">Submit</button>
         </form>
       </div>
       <!-- <p class="system-text">Act like you are a spanish teacher. Your name is Sharon. Speak like a poet...</p> -->
